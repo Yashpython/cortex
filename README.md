@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cortex
 
-## Getting Started
+AI research paper analysis with **transparent retrieval**. Upload a paper, ask questions, and see exactly how the AI finds its answers.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-pgvector-green?logo=supabase)
+![Gemini](https://img.shields.io/badge/Google-Gemini-yellow?logo=google)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## The Problem
+
+Every AI chatbot is a black box. You ask a question, get an answer, and have no idea whether it's grounded in real data or completely hallucinated. There's no way to verify *how* the AI arrived at its response.
+
+## What Cortex Does
+
+Cortex is a **glass-box** research assistant. When you ask a question about an uploaded paper, it doesn't just give you an answer — it shows you the entire retrieval pipeline:
+
+1. **Vector Search** — which chunks of the paper were retrieved and their cosine similarity scores
+2. **AI Re-Ranking** — how a second pass reordered results by contextual relevance (with movement indicators)
+3. **Context Window** — the exact text that was fed to the LLM
+4. **Confidence Score** — a visual indicator of answer reliability
+
+## How It Works
+
+```
+PDF Upload → Text Extraction → Chunking → Gemini Embeddings → Supabase pgvector
+                                                                      ↓
+User Query → Embed Query → Vector Similarity Search → LLM Re-Ranking → Gemini Answer
+                                                                      ↓
+                                                        Full Retrieval Trace → UI
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Upload pipeline:**
+- PDF text extraction via `unpdf`
+- Recursive text chunking (800 chars, 150 overlap)
+- Embedding via `gemini-embedding-001` (3072 dimensions)
+- Storage in Supabase with pgvector for similarity search
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Query pipeline:**
+- Query embedding → cosine similarity search (top 8 chunks)
+- LLM-based re-ranking to reorder by contextual relevance
+- Top 3 re-ranked chunks assembled into context window
+- Gemini generates a grounded answer
+- Full retrieval metadata returned to the frontend
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech Stack
 
-## Learn More
+| Layer | Tech |
+|-------|------|
+| Frontend | Next.js 16, React, TypeScript, Tailwind CSS, Framer Motion |
+| Backend | Next.js API Routes |
+| Database | Supabase (PostgreSQL + pgvector) |
+| LLM | Google Gemini 2.5 Flash |
+| Embeddings | Gemini Embedding 001 (3072-dim) |
+| PDF Parsing | unpdf |
+| Deployment | Vercel |
 
-To learn more about Next.js, take a look at the following resources:
+## Running Locally
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Clone the repo
+git clone https://github.com/Yashpython/cortex.git
+cd cortex
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Install dependencies
+npm install
 
-## Deploy on Vercel
+# Set up environment variables
+cp .env.example .env.local
+# Add your Supabase URL, Supabase Anon Key, and Gemini API Key
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Set up the database
+# Run supabase-setup.sql in your Supabase SQL Editor
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Start the dev server
+npm run dev
+```
+
+## Environment Variables
+
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+## Project Structure
+
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── upload/route.ts    # PDF processing pipeline
+│   │   └── query/route.ts     # Vector search + re-ranking + generation
+│   ├── page.tsx               # Landing + chat interface
+│   ├── layout.tsx             # Root layout with Inter font
+│   └── globals.css            # Design system
+├── components/
+│   ├── UploadZone.tsx         # Drag-and-drop PDF upload
+│   ├── ChatInterface.tsx      # Split-view chat + trace panel
+│   └── RetrievalPanel.tsx     # Retrieval transparency visualization
+└── lib/
+    ├── gemini.ts              # Gemini embeddings + chat client
+    ├── supabase.ts            # Supabase client
+    ├── chunker.ts             # Text chunking utility
+    └── types.ts               # Shared TypeScript types
+```

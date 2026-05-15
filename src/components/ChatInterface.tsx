@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Loader2, Brain, Search } from "lucide-react";
+import { Send, Loader2, Brain, Search, Eye, X } from "lucide-react";
 import type { RetrievalTrace } from "@/lib/types";
 import RetrievalPanel from "./RetrievalPanel";
 
@@ -28,6 +28,7 @@ export default function ChatInterface({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [activeTrace, setActiveTrace] = useState<RetrievalTrace | null>(null);
+  const [showMobileTrace, setShowMobileTrace] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,6 +50,7 @@ export default function ChatInterface({
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
     setActiveTrace(null);
+    setShowMobileTrace(false);
 
     try {
       const res = await fetch("/api/query", {
@@ -97,12 +99,12 @@ export default function ChatInterface({
         {/* Document info header */}
         <div className="glass-card p-4 mb-4 flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center"
+            className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
             style={{ background: "var(--accent-glow)" }}
           >
             <Brain size={20} style={{ color: "var(--accent)" }} />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h3
               className="text-sm font-semibold truncate"
               style={{ color: "var(--text-primary)" }}
@@ -113,6 +115,21 @@ export default function ChatInterface({
               {chunkCount} chunks indexed • Ready to query
             </p>
           </div>
+          {/* Mobile trace toggle */}
+          {activeTrace && (
+            <button
+              onClick={() => setShowMobileTrace(true)}
+              className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+              style={{
+                background: "var(--accent-glow)",
+                color: "var(--accent)",
+                border: "1px solid var(--border-active)",
+              }}
+            >
+              <Eye size={14} />
+              Trace
+            </button>
+          )}
         </div>
 
         {/* Messages area */}
@@ -128,7 +145,7 @@ export default function ChatInterface({
                 <p style={{ color: "var(--text-muted)" }}>
                   Ask a question about your paper
                 </p>
-                <p className="text-xs mt-1" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
+                <p className="text-xs mt-1 hidden lg:block" style={{ color: "var(--text-muted)", opacity: 0.6 }}>
                   Watch the retrieval process unfold in real-time →
                 </p>
               </div>
@@ -161,7 +178,13 @@ export default function ChatInterface({
                         }
                   }
                   onClick={() => {
-                    if (msg.trace) setActiveTrace(msg.trace);
+                    if (msg.trace) {
+                      setActiveTrace(msg.trace);
+                      // On mobile, auto-open the panel
+                      if (window.innerWidth < 1024) {
+                        setShowMobileTrace(true);
+                      }
+                    }
                   }}
                 >
                   {msg.content}
@@ -224,7 +247,7 @@ export default function ChatInterface({
         </form>
       </div>
 
-      {/* Right: Retrieval Transparency Panel */}
+      {/* Right: Retrieval Transparency Panel (Desktop) */}
       <div className="w-[420px] flex-shrink-0 hidden lg:block">
         {activeTrace ? (
           <RetrievalPanel trace={activeTrace} />
@@ -247,6 +270,39 @@ export default function ChatInterface({
           </div>
         )}
       </div>
+
+      {/* Mobile: Retrieval Panel Overlay */}
+      <AnimatePresence>
+        {showMobileTrace && activeTrace && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 lg:hidden"
+            style={{ background: "rgba(0,0,0,0.7)" }}
+            onClick={() => setShowMobileTrace(false)}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="absolute right-0 top-0 bottom-0 w-full max-w-md overflow-y-auto p-4"
+              style={{ background: "var(--bg-primary)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowMobileTrace(false)}
+                className="mb-4 flex items-center gap-2 text-sm"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                <X size={16} /> Close trace
+              </button>
+              <RetrievalPanel trace={activeTrace} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
