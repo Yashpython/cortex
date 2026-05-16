@@ -7,6 +7,8 @@ AI research paper analysis with **transparent retrieval**. Upload a paper, ask q
 ![Supabase](https://img.shields.io/badge/Supabase-pgvector-green?logo=supabase)
 ![Gemini](https://img.shields.io/badge/Google-Gemini-yellow?logo=google)
 
+![Cortex Landing Page](public/screenshots/landing5.png)
+
 ## The Problem
 
 Every AI chatbot is a black box. You ask a question, get an answer, and have no idea whether it's grounded in real data or completely hallucinated. There's no way to verify *how* the AI arrived at its response.
@@ -19,6 +21,8 @@ Cortex is a **glass-box** research assistant. When you ask a question about an u
 2. **AI Re-Ranking** — how a second pass reordered results by contextual relevance (with movement indicators)
 3. **Context Window** — the exact text that was fed to the LLM
 4. **Confidence Score** — a visual indicator of answer reliability
+
+![Cortex Chat Interface](public/screenshots/02-chat.png)
 
 ## How It Works
 
@@ -94,7 +98,7 @@ src/
 │   │   └── query/route.ts     # Vector search + re-ranking + generation
 │   ├── page.tsx               # Landing + chat interface
 │   ├── layout.tsx             # Root layout with Inter font
-│   └── globals.css            # Design system
+│   └── globals.css            # Design system tokens
 ├── components/
 │   ├── UploadZone.tsx         # Drag-and-drop PDF upload
 │   ├── ChatInterface.tsx      # Split-view chat + trace panel
