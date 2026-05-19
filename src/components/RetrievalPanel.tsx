@@ -1,225 +1,247 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowUp, ArrowDown, Minus, Clock, Search, Filter, MessageSquare } from "lucide-react";
 import type { RetrievalTrace } from "@/lib/types";
 
 interface RetrievalPanelProps {
   trace: RetrievalTrace;
 }
 
-function ConfidenceMeter({ confidence }: { confidence: number }) {
-  const radius = 36;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (confidence / 100) * circumference;
+const springEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-  const getColor = (score: number) => {
-    if (score >= 80) return "var(--success)";
-    if (score >= 50) return "var(--warning)";
-    return "var(--error)";
-  };
+/* ─── Confidence Counter ─── */
+function ConfidenceCounter({
+  value,
+  delay = 0,
+}: {
+  value: number;
+  delay?: number;
+}) {
+  const [display, setDisplay] = useState(0);
+  const rafRef = useRef<number>(0);
+
+  useEffect(() => {
+    setDisplay(0);
+
+    const timeout = setTimeout(() => {
+      let start: number | null = null;
+      const duration = 600;
+
+      const step = (timestamp: number) => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+        // easeOut cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplay(Math.round(eased * value));
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(step);
+        }
+      };
+
+      rafRef.current = requestAnimationFrame(step);
+    }, delay * 1000);
+
+    return () => {
+      clearTimeout(timeout);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [value, delay]);
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <div className="relative w-[72px] h-[72px]">
-        <svg className="w-full h-full confidence-ring" viewBox="0 0 80 80">
-          <circle
-            cx="40" cy="40" r={radius}
-            fill="none"
-            stroke="var(--bg-secondary)"
-            strokeWidth="6"
-          />
-          <motion.circle
-            cx="40" cy="40" r={radius}
-            fill="none"
-            stroke={getColor(confidence)}
-            strokeWidth="6"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <motion.span
-            className="text-[17px] font-bold"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            style={{ color: getColor(confidence) }}
-          >
-            {confidence}%
-          </motion.span>
-        </div>
+    <div className="text-right shrink-0">
+      <div className="font-mono text-5xl font-bold text-accent leading-none tabular-nums">
+        {display}%
       </div>
-      <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-muted)" }}>
-        Confidence
-      </span>
+      <div className="font-mono text-[10px] uppercase text-secondary tracking-widest mt-1">
+        confidence
+      </div>
     </div>
   );
 }
 
-function ScoreBar({ score, maxScore = 1 }: { score: number; maxScore?: number }) {
-  const percentage = Math.min((score / maxScore) * 100, 100);
-  return (
-    <div className="score-bar-container mt-1">
-      <motion.div
-        className="score-bar"
-        initial={{ width: 0 }}
-        animate={{ width: `${percentage}%` }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      />
-    </div>
-  );
-}
-
-function MovementIcon({ movement }: { movement: "up" | "down" | "stayed" }) {
-  if (movement === "up")
-    return <ArrowUp size={12} style={{ color: "var(--success)" }} />;
-  if (movement === "down")
-    return <ArrowDown size={12} style={{ color: "var(--error)" }} />;
-  return <Minus size={12} style={{ color: "var(--text-muted)" }} />;
-}
-
+/* ─── Main Panel ─── */
 export default function RetrievalPanel({ trace }: RetrievalPanelProps) {
+  const [contextExpanded, setContextExpanded] = useState(false);
+
+  // Reset expand state when trace changes
+  useEffect(() => {
+    setContextExpanded(false);
+  }, [trace]);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col gap-4 h-full overflow-y-auto pr-2 pb-4"
-    >
-      {/* Header with confidence + timing */}
-      <div className="glass-card p-5 flex items-center justify-between">
+    <div className="flex flex-col gap-0 h-full overflow-y-auto">
+      {/* ─── Header: timing + confidence ─── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0, duration: 0.4, ease: springEase }}
+        className="flex items-start justify-between px-8 pt-6 pb-4"
+      >
         <div className="flex flex-col gap-1">
-          <h3 className="text-[15px] font-bold tracking-tight gradient-text">Retrieval Trace</h3>
-          <div className="flex flex-col gap-1 mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
-            <span className="flex items-center gap-1.5 font-mono">
-              <Clock size={12} /> {trace.retrieval_time_ms}ms search
-            </span>
-            <span className="flex items-center gap-1.5 font-mono">
-              <Clock size={12} /> {trace.total_time_ms}ms total
+          <span className="font-mono text-xs text-secondary tabular-nums">
+            {trace.retrieval_time_ms}ms search · {trace.total_time_ms}ms total
+          </span>
+        </div>
+        <ConfidenceCounter value={trace.confidence} delay={1.2} />
+      </motion.div>
+
+      <div className="px-8 pb-8 flex flex-col gap-8">
+        {/* ═══ STEP 1 — VECTOR SEARCH ═══ */}
+        <motion.section
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.4, ease: springEase }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot" />
+            <h3 className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[#fafafa]">
+              Vector Search
+            </h3>
+            <span className="font-mono text-[11px] text-secondary ml-auto tabular-nums">
+              {trace.retrieved_chunks.length} chunks
             </span>
           </div>
-        </div>
-        <ConfidenceMeter confidence={trace.confidence} />
-      </div>
 
-      {/* Step 1: Retrieved Chunks */}
-      <div className="glass-card p-5">
-        <div className="flex items-center gap-2.5 mb-4">
-          <span className="step-badge">1</span>
-          <Search size={16} style={{ color: "var(--accent)" }} />
-          <h4 className="text-[14px] font-semibold" style={{ color: "var(--text-primary)" }}>
-            Vector Search
-          </h4>
-          <span className="text-[11px] font-medium ml-auto px-2 py-0.5 rounded-full" style={{ background: "var(--bg-secondary)", color: "var(--text-secondary)" }}>
-            {trace.retrieved_chunks.length} chunks
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          {trace.retrieved_chunks.map((chunk, i) => (
-            <motion.div
-              key={chunk.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="chunk-content"
-            >
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[11px] font-mono font-medium tracking-wide" style={{ color: "var(--text-muted)" }}>
-                  Chunk #{chunk.chunk_index}
-                </span>
-                <span className="text-[11px] font-semibold font-mono" style={{ color: "var(--accent)" }}>
-                  {(chunk.similarity * 100).toFixed(1)}%
-                </span>
-              </div>
-              <ScoreBar score={chunk.similarity} />
-              <p className="text-[13px] mt-2.5 leading-[1.6]" style={{ color: "var(--text-secondary)" }}>
-                {chunk.content.substring(0, 140)}...
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Step 2: Re-ranked Chunks */}
-      <div className="glass-card p-5">
-        <div className="flex items-center gap-2.5 mb-4">
-          <span className="step-badge">2</span>
-          <Filter size={16} style={{ color: "var(--accent)" }} />
-          <h4 className="text-[14px] font-semibold" style={{ color: "var(--text-primary)" }}>
-            AI Re-Ranking
-          </h4>
-          <span className="text-[11px] font-medium ml-auto px-2 py-0.5 rounded-full" style={{ background: "var(--bg-secondary)", color: "var(--text-secondary)" }}>
-            Top {trace.reranked_chunks.length}
-          </span>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          {trace.reranked_chunks.slice(0, 5).map((chunk, i) => (
-            <motion.div
-              key={chunk.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.08 }}
-              className="chunk-content"
-            >
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono font-medium tracking-wide" style={{ color: "var(--text-muted)" }}>
+          <div className="flex flex-col gap-3">
+            {trace.retrieved_chunks.map((chunk, i) => (
+              <div key={chunk.id} className="group">
+                {/* Row: Chunk label ·········· Score */}
+                <div className="flex items-baseline gap-2 px-3 py-2 -mx-3 rounded-md border border-transparent group-hover:border-white/[0.05] group-hover:bg-white/[0.02] group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)] transition-all duration-200">
+                  <span className="font-mono text-xs text-secondary group-hover:text-primary transition-colors duration-200 whitespace-nowrap">
                     Chunk #{chunk.chunk_index}
                   </span>
-                  <div className="flex items-center gap-1 bg-[#131316] px-1.5 py-0.5 rounded text-[10px] font-mono">
-                    <MovementIcon movement={chunk.movement} />
-                    <span style={{
-                      color: chunk.movement === "up" ? "var(--success)"
-                           : chunk.movement === "down" ? "var(--error)"
-                           : "var(--text-muted)"
-                    }}>
-                      {chunk.movement === "up" && `${chunk.original_rank}→${chunk.new_rank}`}
-                      {chunk.movement === "down" && `${chunk.original_rank}→${chunk.new_rank}`}
-                      {chunk.movement === "stayed" && `#${chunk.new_rank}`}
+                  <span className="flex-1 border-b border-dotted border-[#333] self-end mb-1" />
+                  <span className="font-mono text-xs font-semibold text-accent tabular-nums whitespace-nowrap">
+                    {(chunk.similarity * 100).toFixed(1)}%
+                  </span>
+                </div>
+                {/* Progress bar */}
+                <div className="h-1 bg-[#222] rounded-full overflow-hidden mt-2">
+                  <motion.div
+                    className="h-full rounded-full bg-accent shadow-[0_0_8px_rgba(99,102,241,0.8)]"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${chunk.similarity * 100}%` }}
+                    transition={{
+                      delay: 0.15 + i * 0.05,
+                      duration: 0.4,
+                      ease: springEase,
+                    }}
+                    style={{ opacity: Math.max(0.3, 1 - i * 0.15) }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* ═══ STEP 2 — RE-RANKING ═══ */}
+        <motion.section
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.4, ease: springEase }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot" />
+            <h3 className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[#fafafa]">
+              Re-Ranking
+            </h3>
+            <span className="font-mono text-[11px] text-secondary ml-auto tabular-nums">
+              top {trace.reranked_chunks.length}
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {trace.reranked_chunks.slice(0, 5).map((chunk, i) => {
+              const delta = chunk.original_rank - chunk.new_rank;
+
+              return (
+                <motion.div
+                  key={chunk.id}
+                  initial={{
+                    opacity: 0,
+                    y: chunk.movement === "up" ? 8 : 0,
+                  }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={
+                    chunk.movement === "up"
+                      ? {
+                          delay: 0.7 + i * 0.06,
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 15,
+                        }
+                      : {
+                          delay: 0.7 + i * 0.06,
+                          duration: 0.3,
+                          ease: springEase,
+                        }
+                  }
+                  className="group"
+                >
+                  <div className="flex items-baseline gap-2 px-3 py-2 -mx-3 rounded-md border border-transparent group-hover:border-white/[0.05] group-hover:bg-white/[0.02] group-hover:shadow-[0_4px_12px_rgba(0,0,0,0.5)] transition-all duration-200">
+                    <span className="font-mono text-xs text-secondary group-hover:text-primary transition-colors duration-200 whitespace-nowrap">
+                      Chunk #{chunk.chunk_index}
+                    </span>
+
+                    {/* Movement indicator */}
+                    <span
+                      className={`font-mono text-[11px] font-medium tabular-nums whitespace-nowrap ${
+                        chunk.movement === "up"
+                          ? "text-accent"
+                          : chunk.movement === "down"
+                            ? "text-secondary"
+                            : "text-muted"
+                      }`}
+                    >
+                      {chunk.movement === "up" && `↑ +${delta}`}
+                      {chunk.movement === "down" && `↓ ${delta}`}
+                      {chunk.movement === "stayed" && "—"}
+                    </span>
+
+                    <span className="flex-1 border-b border-dotted border-[#333] self-end mb-1" />
+                    <span className="font-mono text-xs font-semibold text-accent tabular-nums whitespace-nowrap">
+                      {(chunk.relevance_score * 100).toFixed(1)}%
                     </span>
                   </div>
-                </div>
-                <span className="text-[11px] font-semibold font-mono" style={{ color: "var(--accent-secondary)" }}>
-                  {(chunk.relevance_score * 100).toFixed(1)}%
-                </span>
-              </div>
-              <ScoreBar score={chunk.relevance_score} />
-              <p className="text-[13px] mt-2.5 leading-[1.6]" style={{ color: "var(--text-secondary)" }}>
-                {chunk.content.substring(0, 140)}...
-              </p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.section>
 
-      {/* Step 3: Final Context */}
-      <div className="glass-card p-5">
-        <div className="flex items-center gap-2.5 mb-4">
-          <span className="step-badge">3</span>
-          <MessageSquare size={16} style={{ color: "var(--accent)" }} />
-          <h4 className="text-[14px] font-semibold" style={{ color: "var(--text-primary)" }}>
-            Context Sent to LLM
-          </h4>
-        </div>
-        <div
-          className="p-4 rounded-lg text-[12px] leading-relaxed max-h-48 overflow-y-auto"
-          style={{
-            background: "var(--bg-secondary)",
-            color: "var(--text-secondary)",
-            fontFamily: "var(--font-mono)",
-            border: "1px solid var(--border)",
-          }}
+        {/* ═══ STEP 3 — CONTEXT WINDOW ═══ */}
+        <motion.section
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.0, duration: 0.4, ease: springEase }}
         >
-          {trace.final_context.substring(0, 600)}
-          {trace.final_context.length > 600 && "..."}
-        </div>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot" />
+            <h3 className="font-mono text-[11px] font-semibold uppercase tracking-widest text-[#fafafa]">
+              Context Window
+            </h3>
+          </div>
+
+          <div className="border border-edge rounded-xl bg-gradient-to-b from-[#0a0a0a] to-[#050505] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] p-5 overflow-hidden">
+            <pre className="font-mono text-[11px] text-[#a3a3a3] whitespace-pre-wrap break-words leading-relaxed">
+              {contextExpanded
+                ? trace.final_context
+                : trace.final_context.substring(0, 300)}
+              {!contextExpanded && trace.final_context.length > 300 && "..."}
+            </pre>
+          </div>
+
+          {trace.final_context.length > 300 && (
+            <button
+              onClick={() => setContextExpanded(!contextExpanded)}
+              className="font-mono text-xs text-secondary hover:text-primary transition-colors duration-150 mt-2"
+            >
+              {contextExpanded ? "collapse" : "show full context"}
+            </button>
+          )}
+        </motion.section>
       </div>
-    </motion.div>
+    </div>
   );
 }

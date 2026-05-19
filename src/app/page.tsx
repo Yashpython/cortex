@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Brain, Sparkles, Eye, Zap } from "lucide-react";
 import UploadZone from "@/components/UploadZone";
 import ChatInterface from "@/components/ChatInterface";
+import Hero3D from "@/components/Hero3D";
+
+const springEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 export default function Home() {
   const [documentId, setDocumentId] = useState<string | null>(null);
@@ -17,135 +19,136 @@ export default function Home() {
     setChunkCount(chunks);
   };
 
+  /* ─── Chat Mode ─── */
   if (documentId) {
     return (
-      <main className="min-h-screen p-6">
-        {/* Minimal header in chat mode */}
-        <div className="flex items-center gap-3 mb-6 max-w-7xl mx-auto">
-          <Brain size={24} style={{ color: "var(--accent)" }} />
-          <h1 className="text-lg font-bold gradient-text">Cortex</h1>
+      <motion.main
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6 }}
+        className="h-screen w-full flex flex-col bg-canvas"
+      >
+        {/* Top bar */}
+        <div className="flex items-center gap-4 px-8 h-14 border-b border-edge shrink-0 bg-surface/50 backdrop-blur-md">
+          <span className="font-mono font-bold text-sm text-primary tracking-tight">
+            cortex
+          </span>
+          <span className="font-mono text-xs text-secondary px-3 py-1 border border-edge rounded-full bg-canvas shadow-inner">
+            {documentTitle} · {chunkCount} chunks
+          </span>
           <button
             onClick={() => {
               setDocumentId(null);
               setDocumentTitle("");
               setChunkCount(0);
             }}
-            className="text-[13px] font-medium ml-auto rounded-lg transition-all duration-200"
-            style={{
-              padding: "8px 16px",
-              background: "var(--bg-secondary)",
-              color: "var(--text-primary)",
-              border: "1px solid var(--border)",
-              boxShadow: "var(--shadow-sm)"
-            }}
+            className="ml-auto font-mono text-xs text-secondary hover:text-primary transition-colors duration-150 px-3 py-1.5 rounded-md hover:bg-white/5"
           >
-            Upload new paper
+            ← new paper
           </button>
         </div>
+
         <ChatInterface
           documentId={documentId}
           documentTitle={documentTitle}
           chunkCount={chunkCount}
         />
-      </main>
+      </motion.main>
     );
   }
 
+  /* ─── Landing ─── */
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-6">
-      {/* Background gradient orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div
-          className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[120px] opacity-20"
-          style={{ background: "var(--accent)" }}
-        />
-        <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full blur-[120px] opacity-10"
-          style={{ background: "var(--accent-secondary)" }}
-        />
-      </div>
+    <motion.main
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.8 }}
+      className="relative h-screen w-full flex items-center justify-center bg-canvas overflow-hidden"
+    >
+      {/* 3D Background */}
+      <Hero3D />
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center gap-8 max-w-3xl">
-        {/* Logo + Title */}
+      {/* Subtle radial gradient to ensure text readability over 3D */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#080808_100%)] pointer-events-none" />
+
+      <div className="relative z-10 w-full max-w-[1000px] mx-auto px-8 flex flex-col items-center text-center">
+        {/* Pill Badge */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center"
+          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.6, ease: springEase }}
+          className="mb-8 font-mono text-[11px] font-medium text-accent tracking-widest uppercase px-4 py-1.5 border border-accent/20 rounded-full bg-accent/5 backdrop-blur-md shadow-[0_0_15px_rgba(99,102,241,0.1)]"
         >
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div
-              className="w-14 h-14 rounded-2xl flex items-center justify-center glow"
-              style={{ background: "var(--accent-glow)", border: "1px solid var(--border-active)" }}
-            >
-              <Brain size={28} style={{ color: "var(--accent)" }} />
-            </div>
-          </div>
-          <h1 className="text-5xl font-bold tracking-tight mb-3">
-            <span className="gradient-text">Cortex</span>
-          </h1>
-          <p
-            className="text-lg max-w-lg mx-auto leading-relaxed"
-            style={{ color: "var(--text-secondary)" }}
+          Intelligence, visualized
+        </motion.div>
+
+        <h1 className="text-5xl md:text-6xl lg:text-[80px] font-extrabold leading-[0.9] text-primary tracking-tighter mb-6 drop-shadow-2xl">
+          <motion.span
+            initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.3, duration: 0.8, ease: springEase }}
+            className="block text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60"
           >
-            AI research paper analysis with{" "}
-            <span style={{ color: "var(--text-primary)" }}>
-              transparent retrieval
-            </span>
-            . See exactly how the AI finds its answers.
-          </p>
-        </motion.div>
+            Know exactly
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.45, duration: 0.8, ease: springEase }}
+            className="block text-transparent bg-clip-text bg-gradient-to-b from-white/90 to-white/30"
+          >
+            how it thinks.
+          </motion.span>
+        </h1>
 
-        {/* Feature pills */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="flex flex-wrap justify-center gap-3"
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.6, ease: springEase }}
+          className="text-base md:text-lg text-[#a3a3a3] max-w-xl font-light leading-relaxed"
         >
-          {[
-            { icon: Sparkles, label: "Vector Search" },
-            { icon: Eye, label: "Transparent Retrieval" },
-            { icon: Zap, label: "AI Re-Ranking" },
-          ].map(({ icon: Icon, label }) => (
-            <div
-              key={label}
-              className="flex items-center gap-2 rounded-full text-[13px] font-medium shadow-sm transition-all duration-300 hover:border-[var(--accent)] hover:shadow-md cursor-default"
-              style={{
-                padding: "8px 16px",
-                background: "var(--bg-secondary)",
-                border: "1px solid var(--border)",
-                color: "var(--text-secondary)",
-              }}
-            >
-              <Icon size={14} style={{ color: "var(--accent)" }} />
-              {label}
-            </div>
-          ))}
-        </motion.div>
+          Upload a research paper and interrogate it. Cortex reveals the complete vector search and re-ranking pipeline in real-time.
+        </motion.p>
 
-        {/* Upload Zone */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="w-full"
+          transition={{ delay: 0.8, duration: 0.6, ease: springEase }}
+          className="mt-10 w-full max-w-md"
         >
           <UploadZone onUploadComplete={handleUploadComplete} />
         </motion.div>
-
-        {/* Footer hint */}
-        <motion.p
+        
+        {/* Features Row */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-xs text-center"
-          style={{ color: "var(--text-muted)" }}
+          transition={{ delay: 1.0, duration: 0.6 }}
+          className="flex flex-wrap justify-center gap-6 mt-12 text-muted font-mono text-xs"
         >
-          Built with Next.js • Supabase pgvector • Google Gemini
-        </motion.p>
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-accent" /> Vector Search
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-accent" /> Cross-Encoder Re-ranking
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-accent" /> Transparent Context
+          </div>
+        </motion.div>
+
+        {/* Footer */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
+          className="mt-12 pointer-events-none"
+        >
+          <p className="font-mono text-[10px] text-muted tracking-wider uppercase">
+            Built with Next.js · Supabase pgvector · Gemini 2.5
+          </p>
+        </motion.div>
       </div>
-    </main>
+    </motion.main>
   );
 }
