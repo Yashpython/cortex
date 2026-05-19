@@ -162,21 +162,9 @@ export default function ChatInterface({
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed ${
-                    msg.role === "user" ? "" : "glass-card"
+                  className={`max-w-[85%] p-4 rounded-2xl text-[15px] leading-relaxed shadow-sm ${
+                    msg.role === "user" ? "msg-user" : "msg-assistant"
                   }`}
-                  style={
-                    msg.role === "user"
-                      ? {
-                          background: "var(--accent)",
-                          color: "white",
-                          borderBottomRightRadius: "4px",
-                        }
-                      : {
-                          borderBottomLeftRadius: "4px",
-                          color: "var(--text-primary)",
-                        }
-                  }
                   onClick={() => {
                     if (msg.trace) {
                       setActiveTrace(msg.trace);
@@ -235,11 +223,12 @@ export default function ChatInterface({
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200"
+            className="w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200 shadow-sm"
             style={{
               background: input.trim() ? "var(--accent)" : "var(--bg-secondary)",
               color: input.trim() ? "white" : "var(--text-muted)",
               cursor: input.trim() ? "pointer" : "default",
+              border: "1px solid var(--border)"
             }}
           >
             <Send size={18} />

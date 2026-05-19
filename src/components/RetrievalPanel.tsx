@@ -20,20 +20,20 @@ function ConfidenceMeter({ confidence }: { confidence: number }) {
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative w-24 h-24">
-        <svg className="w-24 h-24 -rotate-90" viewBox="0 0 80 80">
+    <div className="flex flex-col items-center gap-1">
+      <div className="relative w-[72px] h-[72px]">
+        <svg className="w-full h-full confidence-ring" viewBox="0 0 80 80">
           <circle
             cx="40" cy="40" r={radius}
             fill="none"
-            stroke="var(--border)"
-            strokeWidth="4"
+            stroke="var(--bg-secondary)"
+            strokeWidth="6"
           />
           <motion.circle
             cx="40" cy="40" r={radius}
             fill="none"
             stroke={getColor(confidence)}
-            strokeWidth="4"
+            strokeWidth="6"
             strokeLinecap="round"
             strokeDasharray={circumference}
             initial={{ strokeDashoffset: circumference }}
@@ -43,7 +43,7 @@ function ConfidenceMeter({ confidence }: { confidence: number }) {
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.span
-            className="text-xl font-bold"
+            className="text-[17px] font-bold"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -53,7 +53,9 @@ function ConfidenceMeter({ confidence }: { confidence: number }) {
           </motion.span>
         </div>
       </div>
-      <span className="text-xs" style={{ color: "var(--text-muted)" }}>Confidence</span>
+      <span className="text-[11px] uppercase tracking-wider font-semibold" style={{ color: "var(--text-muted)" }}>
+        Confidence
+      </span>
     </div>
   );
 }
@@ -61,7 +63,7 @@ function ConfidenceMeter({ confidence }: { confidence: number }) {
 function ScoreBar({ score, maxScore = 1 }: { score: number; maxScore?: number }) {
   const percentage = Math.min((score / maxScore) * 100, 100);
   return (
-    <div className="w-full rounded-full" style={{ background: "var(--border)", height: "6px" }}>
+    <div className="score-bar-container mt-1">
       <motion.div
         className="score-bar"
         initial={{ width: 0 }}
@@ -74,10 +76,10 @@ function ScoreBar({ score, maxScore = 1 }: { score: number; maxScore?: number })
 
 function MovementIcon({ movement }: { movement: "up" | "down" | "stayed" }) {
   if (movement === "up")
-    return <ArrowUp size={14} className="movement-up" />;
+    return <ArrowUp size={12} style={{ color: "var(--success)" }} />;
   if (movement === "down")
-    return <ArrowDown size={14} className="movement-down" />;
-  return <Minus size={14} className="movement-stayed" />;
+    return <ArrowDown size={12} style={{ color: "var(--error)" }} />;
+  return <Minus size={12} style={{ color: "var(--text-muted)" }} />;
 }
 
 export default function RetrievalPanel({ trace }: RetrievalPanelProps) {
@@ -86,17 +88,17 @@ export default function RetrievalPanel({ trace }: RetrievalPanelProps) {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col gap-5 h-full overflow-y-auto pr-1"
+      className="flex flex-col gap-4 h-full overflow-y-auto pr-2 pb-4"
     >
       {/* Header with confidence + timing */}
       <div className="glass-card p-5 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-semibold mb-1 gradient-text">Retrieval Trace</h3>
-          <div className="flex items-center gap-3 text-xs" style={{ color: "var(--text-muted)" }}>
-            <span className="flex items-center gap-1">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-[15px] font-bold tracking-tight gradient-text">Retrieval Trace</h3>
+          <div className="flex flex-col gap-1 mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+            <span className="flex items-center gap-1.5 font-mono">
               <Clock size={12} /> {trace.retrieval_time_ms}ms search
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1.5 font-mono">
               <Clock size={12} /> {trace.total_time_ms}ms total
             </span>
           </div>
@@ -106,38 +108,37 @@ export default function RetrievalPanel({ trace }: RetrievalPanelProps) {
 
       {/* Step 1: Retrieved Chunks */}
       <div className="glass-card p-5">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2.5 mb-4">
           <span className="step-badge">1</span>
-          <Search size={14} style={{ color: "var(--accent)" }} />
-          <h4 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+          <Search size={16} style={{ color: "var(--accent)" }} />
+          <h4 className="text-[14px] font-semibold" style={{ color: "var(--text-primary)" }}>
             Vector Search
           </h4>
-          <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
-            {trace.retrieved_chunks.length} chunks found
+          <span className="text-[11px] font-medium ml-auto px-2 py-0.5 rounded-full" style={{ background: "var(--bg-secondary)", color: "var(--text-secondary)" }}>
+            {trace.retrieved_chunks.length} chunks
           </span>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {trace.retrieved_chunks.map((chunk, i) => (
             <motion.div
               key={chunk.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="p-3 rounded-lg"
-              style={{ background: "var(--bg-secondary)" }}
+              className="chunk-content"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-mono font-medium tracking-wide" style={{ color: "var(--text-muted)" }}>
                   Chunk #{chunk.chunk_index}
                 </span>
-                <span className="text-xs font-semibold" style={{ color: "var(--accent)" }}>
+                <span className="text-[11px] font-semibold font-mono" style={{ color: "var(--accent)" }}>
                   {(chunk.similarity * 100).toFixed(1)}%
                 </span>
               </div>
               <ScoreBar score={chunk.similarity} />
-              <p className="text-xs mt-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                {chunk.content.substring(0, 120)}...
+              <p className="text-[13px] mt-2.5 leading-[1.6]" style={{ color: "var(--text-secondary)" }}>
+                {chunk.content.substring(0, 140)}...
               </p>
             </motion.div>
           ))}
@@ -146,50 +147,51 @@ export default function RetrievalPanel({ trace }: RetrievalPanelProps) {
 
       {/* Step 2: Re-ranked Chunks */}
       <div className="glass-card p-5">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2.5 mb-4">
           <span className="step-badge">2</span>
-          <Filter size={14} style={{ color: "var(--accent)" }} />
-          <h4 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Re-Ranked by AI
+          <Filter size={16} style={{ color: "var(--accent)" }} />
+          <h4 className="text-[14px] font-semibold" style={{ color: "var(--text-primary)" }}>
+            AI Re-Ranking
           </h4>
-          <span className="text-xs ml-auto" style={{ color: "var(--text-muted)" }}>
-            {trace.reranked_chunks.length} re-scored
+          <span className="text-[11px] font-medium ml-auto px-2 py-0.5 rounded-full" style={{ background: "var(--bg-secondary)", color: "var(--text-secondary)" }}>
+            Top {trace.reranked_chunks.length}
           </span>
         </div>
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           {trace.reranked_chunks.slice(0, 5).map((chunk, i) => (
             <motion.div
               key={chunk.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + i * 0.08 }}
-              className="p-3 rounded-lg"
-              style={{ background: "var(--bg-secondary)" }}
+              className="chunk-content"
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+                  <span className="text-[11px] font-mono font-medium tracking-wide" style={{ color: "var(--text-muted)" }}>
                     Chunk #{chunk.chunk_index}
                   </span>
-                  <MovementIcon movement={chunk.movement} />
-                  <span className="text-xs" style={{
-                    color: chunk.movement === "up" ? "var(--success)"
-                         : chunk.movement === "down" ? "var(--error)"
-                         : "var(--text-muted)"
-                  }}>
-                    {chunk.movement === "up" && `↑ ${chunk.original_rank} → ${chunk.new_rank}`}
-                    {chunk.movement === "down" && `↓ ${chunk.original_rank} → ${chunk.new_rank}`}
-                    {chunk.movement === "stayed" && `— #${chunk.new_rank}`}
-                  </span>
+                  <div className="flex items-center gap-1 bg-[#131316] px-1.5 py-0.5 rounded text-[10px] font-mono">
+                    <MovementIcon movement={chunk.movement} />
+                    <span style={{
+                      color: chunk.movement === "up" ? "var(--success)"
+                           : chunk.movement === "down" ? "var(--error)"
+                           : "var(--text-muted)"
+                    }}>
+                      {chunk.movement === "up" && `${chunk.original_rank}→${chunk.new_rank}`}
+                      {chunk.movement === "down" && `${chunk.original_rank}→${chunk.new_rank}`}
+                      {chunk.movement === "stayed" && `#${chunk.new_rank}`}
+                    </span>
+                  </div>
                 </div>
-                <span className="text-xs font-semibold" style={{ color: "var(--accent-secondary)" }}>
+                <span className="text-[11px] font-semibold font-mono" style={{ color: "var(--accent-secondary)" }}>
                   {(chunk.relevance_score * 100).toFixed(1)}%
                 </span>
               </div>
               <ScoreBar score={chunk.relevance_score} />
-              <p className="text-xs mt-2 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
-                {chunk.content.substring(0, 120)}...
+              <p className="text-[13px] mt-2.5 leading-[1.6]" style={{ color: "var(--text-secondary)" }}>
+                {chunk.content.substring(0, 140)}...
               </p>
             </motion.div>
           ))}
@@ -198,19 +200,20 @@ export default function RetrievalPanel({ trace }: RetrievalPanelProps) {
 
       {/* Step 3: Final Context */}
       <div className="glass-card p-5">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2.5 mb-4">
           <span className="step-badge">3</span>
-          <MessageSquare size={14} style={{ color: "var(--accent)" }} />
-          <h4 className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+          <MessageSquare size={16} style={{ color: "var(--accent)" }} />
+          <h4 className="text-[14px] font-semibold" style={{ color: "var(--text-primary)" }}>
             Context Sent to LLM
           </h4>
         </div>
         <div
-          className="p-3 rounded-lg text-xs leading-relaxed max-h-40 overflow-y-auto"
+          className="p-4 rounded-lg text-[12px] leading-relaxed max-h-48 overflow-y-auto"
           style={{
             background: "var(--bg-secondary)",
             color: "var(--text-secondary)",
-            fontFamily: "monospace",
+            fontFamily: "var(--font-mono)",
+            border: "1px solid var(--border)",
           }}
         >
           {trace.final_context.substring(0, 600)}

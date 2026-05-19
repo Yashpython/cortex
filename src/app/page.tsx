@@ -30,11 +30,12 @@ export default function Home() {
               setDocumentTitle("");
               setChunkCount(0);
             }}
-            className="text-xs ml-auto px-3 py-1.5 rounded-lg transition-colors"
+            className="text-[13px] font-medium ml-auto px-3.5 py-1.5 rounded-lg transition-all duration-200"
             style={{
-              background: "var(--bg-card)",
-              color: "var(--text-muted)",
+              background: "var(--bg-secondary)",
+              color: "var(--text-primary)",
               border: "1px solid var(--border)",
+              boxShadow: "var(--shadow-sm)"
             }}
           >
             Upload new paper
@@ -109,9 +110,9 @@ export default function Home() {
           ].map(({ icon: Icon, label }) => (
             <div
               key={label}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm"
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium shadow-sm transition-all duration-300 hover:border-[var(--accent)] hover:shadow-md cursor-default"
               style={{
-                background: "var(--bg-card)",
+                background: "var(--bg-secondary)",
                 border: "1px solid var(--border)",
                 color: "var(--text-secondary)",
               }}

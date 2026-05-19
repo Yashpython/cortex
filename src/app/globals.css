@@ -2,44 +2,46 @@
 
 /* ============================================================
    CORTEX DESIGN TOKENS
-   Source: Design System Package
    ============================================================ */
 
 :root {
   /* ---------- BASE COLORS ---------- */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --bg-card: #131316;
+  --bg-card-hover: #1f1f22;
 
-  --border: rgba(255, 255, 255, 0.08);
-  --border-active: rgba(139, 92, 246, 0.5);
+  --border: #27272a;
+  --border-active: #3f3f46;
 
-  --text-primary: #f0f0f5;
-  --text-secondary: #8a8a9a;
-  --text-muted: #5a5a6a;
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
 
-  --accent: #8b5cf6;
-  --accent-glow: rgba(139, 92, 246, 0.15);
-  --accent-secondary: #06b6d4;
+  --accent: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.15);
+  --accent-secondary: #8b5cf6;
 
-  --success: #22c55e;
+  --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
 
-  /* ---------- ACCENT GRADIENT (signature) ---------- */
+  /* ---------- ACCENT GRADIENT ---------- */
   --gradient-accent: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
   --gradient-bar: linear-gradient(90deg, var(--accent) 0%, var(--accent-secondary) 100%);
 
   /* ---------- ELEVATION ---------- */
-  --glow-accent: 0 0 40px var(--accent-glow), 0 0 80px rgba(139, 92, 246, 0.05);
-  --ring-focus: 0 0 0 3px var(--accent-glow);
+  --glow-accent: 0 0 40px var(--accent-glow), 0 0 80px rgba(59, 130, 246, 0.05);
+  --ring-focus: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   /* ---------- RADII ---------- */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-2xl: 24px;
   --radius-pill: 9999px;
 
@@ -51,19 +53,16 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
 
   /* ---------- MOTION ---------- */
   --ease-out-quint: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-fast: 200ms;
+  --dur-fast: 150ms;
   --dur-med: 300ms;
-  --dur-slow: 800ms;
-  --dur-stagger: 80ms;
+  --dur-slow: 700ms;
 
   /* ---------- TYPE ---------- */
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 * {
@@ -81,7 +80,7 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -95,15 +94,17 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-md);
   transition: background var(--dur-med) var(--ease-out-quint),
-              border-color var(--dur-med) var(--ease-out-quint);
+              border-color var(--dur-med) var(--ease-out-quint),
+              transform var(--dur-med) var(--ease-out-quint),
+              box-shadow var(--dur-med) var(--ease-out-quint);
 }
 
 .glass-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border-active);
+  box-shadow: var(--shadow-lg);
 }
 
 .glow {
@@ -119,9 +120,17 @@ body {
 }
 
 /* Score bars */
+.score-bar-container {
+  width: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  height: 4px;
+  overflow: hidden;
+}
+
 .score-bar {
-  height: 6px;
-  border-radius: 3px;
+  height: 100%;
+  border-radius: var(--radius-pill);
   background: var(--gradient-bar);
   transition: width var(--dur-slow) var(--ease-out-quint);
 }
@@ -132,17 +141,19 @@ body {
   border-radius: var(--radius-lg);
   transition: all var(--dur-med) ease;
   cursor: pointer;
+  background: var(--bg-secondary);
 }
 
 .dropzone:hover,
 .dropzone.active {
   border-color: var(--accent);
-  background: var(--accent-glow);
+  background: var(--bg-card-hover);
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -151,37 +162,38 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--border-active);
 }
-
-/* Movement indicators */
-.movement-up { color: var(--success); }
-.movement-down { color: var(--error); }
-.movement-stayed { color: var(--text-muted); }
 
 /* Confidence meter */
 .confidence-ring {
   transition: stroke-dashoffset 1s var(--ease-out-quint);
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
 }
 
 /* Chat input */
 .chat-input {
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   color: var(--text-primary);
   font-size: 15px;
   outline: none;
-  transition: border-color var(--dur-med) ease;
+  transition: all var(--dur-fast) ease;
+  box-shadow: var(--shadow-sm);
+  padding: 12px 20px;
 }
 
 .chat-input:focus {
   border-color: var(--accent);
   box-shadow: var(--ring-focus);
+  background: var(--bg-card);
 }
 
 /* Step indicator */
@@ -192,23 +204,37 @@ body {
   width: 24px;
   height: 24px;
   border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: white;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
 
-/* Feature pills */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-pill);
+/* Chunk content */
+.chunk-content {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-top: 8px;
+}
+
+/* Message Bubble User */
+.msg-user {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-bottom-right-radius: 4px;
+}
+
+/* Message Bubble Assistant */
+.msg-assistant {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  color: var(--text-secondary);
-  font-size: 14px;
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
 }
 
 /* ============================================================
@@ -216,7 +242,7 @@ body {
    ============================================================ */
 
 @keyframes pulse-glow {
-  0%, 100% { opacity: 0.4; }
+  0%, 100% { opacity: 0.5; }
   50%      { opacity: 1; }
 }
 
