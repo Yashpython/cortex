@@ -139,8 +139,7 @@ export default function ChatInterface({
               <div className="text-center">
                 <Brain
                   size={48}
-                  className="mx-auto mb-4"
-                  style={{ color: "var(--text-muted)", opacity: 0.3 }}
+                  style={{ color: "var(--text-muted)", opacity: 0.3, display: "block", margin: "0 auto 16px auto" }}
                 />
                 <p style={{ color: "var(--text-muted)" }}>
                   Ask a question about your paper
@@ -244,8 +243,8 @@ export default function ChatInterface({
           <div className="h-full flex items-center justify-center glass-card p-8">
             <div className="text-center">
               <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ background: "var(--accent-glow)" }}
+                className="w-16 h-16 rounded-full flex items-center justify-center"
+                style={{ background: "var(--accent-glow)", margin: "0 auto 16px auto" }}
               >
                 <Search size={24} style={{ color: "var(--accent)", opacity: 0.5 }} />
               </div>

@@ -30,8 +30,9 @@ export default function Home() {
               setDocumentTitle("");
               setChunkCount(0);
             }}
-            className="text-[13px] font-medium ml-auto px-3.5 py-1.5 rounded-lg transition-all duration-200"
+            className="text-[13px] font-medium ml-auto rounded-lg transition-all duration-200"
             style={{
+              padding: "8px 16px",
               background: "var(--bg-secondary)",
               color: "var(--text-primary)",
               border: "1px solid var(--border)",
@@ -110,8 +111,9 @@ export default function Home() {
           ].map(({ icon: Icon, label }) => (
             <div
               key={label}
-              className="flex items-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium shadow-sm transition-all duration-300 hover:border-[var(--accent)] hover:shadow-md cursor-default"
+              className="flex items-center gap-2 rounded-full text-[13px] font-medium shadow-sm transition-all duration-300 hover:border-[var(--accent)] hover:shadow-md cursor-default"
               style={{
+                padding: "8px 16px",
                 background: "var(--bg-secondary)",
                 border: "1px solid var(--border)",
                 color: "var(--text-secondary)",

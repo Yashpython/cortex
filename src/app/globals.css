@@ -142,6 +142,7 @@ body {
   transition: all var(--dur-med) ease;
   cursor: pointer;
   background: var(--bg-secondary);
+  padding: 48px;
 }
 
 .dropzone:hover,
@@ -227,6 +228,7 @@ body {
   border: 1px solid var(--border);
   color: var(--text-primary);
   border-bottom-right-radius: 4px;
+  padding: 16px 20px;
 }
 
 /* Message Bubble Assistant */
@@ -235,6 +237,7 @@ body {
   border: 1px solid var(--border);
   color: var(--text-primary);
   border-bottom-left-radius: 4px;
+  padding: 16px 20px;
 }
 
 /* ============================================================
