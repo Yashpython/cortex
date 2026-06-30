@@ -55,8 +55,8 @@ Return ONLY a JSON array like [0.9, 0.3, 0.7, ...] with exactly ${chunks.length}
             chunk.original_rank > i + 1
               ? ("up" as const)
               : chunk.original_rank < i + 1
-              ? ("down" as const)
-              : ("stayed" as const),
+                ? ("down" as const)
+                : ("stayed" as const),
         }));
     }
   } catch (e) {
